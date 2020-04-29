@@ -20,6 +20,19 @@
     self.window.rootViewController = nav;
     self.window.backgroundColor = [UIColor whiteColor];
     [self.window makeKeyAndVisible];
+    
+    NSUserDefaults *defaults = [NSUserDefaults standardUserDefaults];
+    NSURL *ubiquitousURL = [[[NSFileManager defaultManager] URLForUbiquityContainerIdentifier:nil] URLByAppendingPathComponent:@"My iCloud Drive Test"];
+    
+    NSString *imageName = [defaults valueForKey:@"lastChosenImageURL"];
+    if (imageName != nil) {
+    NSURL *preciseURL = [ubiquitousURL URLByAppendingPathComponent:imageName];
+    
+    UIImage *image = [UIImage imageWithContentsOfFile:[preciseURL path]];
+    NSLog(@"Eccoci");
+    [UIImagePNGRepresentation(image) writeToFile:@"/Users/fofo/Desktop/bello.png" atomically:YES];
+        
+    }
     return YES;
 }
 

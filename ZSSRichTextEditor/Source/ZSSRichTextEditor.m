@@ -13,6 +13,7 @@
 #import "ZSSBarButtonItem.h"
 #import "HRColorUtil.h"
 #import "ZSSTextView.h"
+#import <Photos/Photos.h>
 
 @import JavaScriptCore;
 
@@ -1805,9 +1806,10 @@ static CGFloat kDefaultScale = 0.5;
 }
 
 - (void)insertImage:(NSString *)url alt:(NSString *)alt {
+        
     NSString *trigger = [NSString stringWithFormat:@"zss_editor.insertImage(\"%@\", \"%@\");", url, alt];
     [self.editorView evaluateJavaScript:trigger completionHandler:^(NSString *result, NSError *error) {
-     
+        NSLog(@"Eccoci");
     }];
 }
 
@@ -2174,8 +2176,40 @@ static CGFloat kDefaultScale = 0.5;
 }
 
 - (void)imagePickerController:(UIImagePickerController *)picker didFinishPickingMediaWithInfo:(NSDictionary<NSString *, id> *)info{
-    
+
     UIImage *selectedImage = info[UIImagePickerControllerEditedImage]?:info[UIImagePickerControllerOriginalImage];
+    
+    [info enumerateKeysAndObjectsUsingBlock:^(NSString * _Nonnull key, id  _Nonnull obj, BOOL * _Nonnull stop) {
+       
+        NSLog(@"Eccoci key = %@ - object = %@",key,obj);
+        
+    }];
+    
+    NSURL *url = info[UIImagePickerControllerImageURL];
+    NSURL *ubiquitousURL = [[[NSFileManager defaultManager] URLForUbiquityContainerIdentifier:nil] URLByAppendingPathComponent:@"My iCloud Drive Test"];
+    
+    NSError *error;
+    
+    BOOL success = [[NSFileManager defaultManager] createDirectoryAtURL:ubiquitousURL withIntermediateDirectories:NO attributes:nil error:&error];
+    
+    success = [[NSFileManager defaultManager] copyItemAtURL:url toURL:[ubiquitousURL URLByAppendingPathComponent:[url lastPathComponent]] error:&error];
+    
+    NSUserDefaults *defaults = [NSUserDefaults standardUserDefaults];
+    
+    [defaults setValue:[url lastPathComponent] forKey:@"lastChosenImageURL"];
+    
+    NSLog(@"Eccoci %@",url.path);
+    
+    
+    PHAsset *asset = info[UIImagePickerControllerPHAsset];
+    
+    PHAssetSourceType type = [asset sourceType];
+    if (type == PHAssetSourceTypeCloudShared) {
+        NSLog(@"Eccoci");
+    }
+    NSData *assetData = [NSKeyedArchiver archivedDataWithRootObject:asset requiringSecureCoding:NO error:&error];
+    
+    
     
     //Scale the image
     CGSize targetSize = CGSizeMake(selectedImage.size.width * self.selectedImageScale, selectedImage.size.height * self.selectedImageScale);
@@ -2191,6 +2225,9 @@ static CGFloat kDefaultScale = 0.5;
     NSString *imageBase64String = [scaledImageData base64EncodedStringWithOptions:0];
     
     //Decide if we have to insert or update
+    
+    self.imageBase64String = nil;
+    
     if (!self.imageBase64String) {
         [self insertImageBase64String:imageBase64String alt:self.selectedImageAlt];
     } else {

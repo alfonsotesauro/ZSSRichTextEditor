@@ -11,6 +11,7 @@
 
 
 #import "DemoModalViewController.h"
+#import "ZSSBarButtonItem.h"
 
 
 @interface ZSSDemoViewController ()
@@ -47,8 +48,24 @@
     
     [self setHTML:html];
     
+    // Custom image button
+    ZSSBarButtonItem *item = [[ZSSBarButtonItem alloc] initWithImage:[UIImage imageNamed:@"ZSSinsertkeyword.png"] style:UIBarButtonItemStylePlain target:self action:@selector(didTapCustomToolbarButton:)];
+    [self addCustomToolbarItem:item];
 }
 
+- (void)didTapCustomToolbarButton:(UIButton *)button {
+    
+    UIStoryboard *mainStoryBoard = [UIStoryboard storyboardWithName:@"iCloud" bundle:nil];
+    
+    UIViewController *vc = [mainStoryBoard instantiateInitialViewController];
+    
+    [self presentViewController:vc animated:YES completion:^{
+        
+    }];
+    
+    //[self.navigationController pushViewController:vc animated:YES];
+    
+}
 
 - (void)showInsertURLAlternatePicker {
     
